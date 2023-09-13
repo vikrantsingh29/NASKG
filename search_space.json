@@ -1,0 +1,14 @@
+{
+    "num_layers": {
+        "_type": "choice",
+        "_value": [1, 2, 3, 4, 5]
+    },
+    "activation_function": {
+        "_type": "choice",
+        "_value": ["relu", "sigmoid", "tanh"]
+    },
+    "learning_rate": {
+        "_type": "uniform",
+        "_value": [0.001, 0.1, 0.01]
+    }
+}

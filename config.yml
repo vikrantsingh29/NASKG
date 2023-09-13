@@ -1,0 +1,18 @@
+experimentName: nas_for_knowledge_graph
+trialConcurrency: 1
+maxExperimentDuration: 1h
+maxTrialNumber: 15
+searchSpaceFile: search_space.json
+useAnnotation: false
+trialCommand: python EnasKg.py
+trialCodeDirectory: .
+trialGpuNumber: 0
+tuner:
+  name: TPE
+  classArgs:
+    optimize_mode: maximize
+trainingService:
+  platform: local
+  use_active_gpu: False
+
+#to run nnictl create --config config.yml

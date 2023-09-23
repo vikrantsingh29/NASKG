@@ -69,7 +69,7 @@ entity_embeddings = nn.Embedding(num_entities, embedding_dim)
 relation_embeddings = nn.Embedding(num_relations, embedding_dim)
 
 
-all_entity_indices = list(range(num_entities))  # or [entity_to_index[e] for e in all_entities]
+all_entity_indices = list(range(num_entities))
 
 # Loss
 margin = 1.0
@@ -89,11 +89,9 @@ def generate_negative_triples(true_triple, all_entity_indices, num_samples, true
     while len(negative_triples) < num_samples:  # Generate num_samples number of negative triples
         t_corrupted = random.choice(all_entity_indices)  # Corrupt tail
 
-        # Check to ensure we don't accidentally generate a positive sample
-        # And also check that the corrupted triple isn't a true triple in the dataset
         if (h, r,
-            t_corrupted) not in true_triples_list and t_corrupted != t:  # Ensure the corrupted entity is not the same as the original
-            negative_triples.add((h, r, t_corrupted))  # Add the corrupted triple to the set
+            t_corrupted) not in true_triples_list and t_corrupted != t:
+            negative_triples.add((h, r, t_corrupted))
 
     return list(negative_triples)
 
@@ -109,8 +107,8 @@ def polynomial(embedding, x_samples):
     # return torch.stack([(embedding * (x ** torch.arange(embedding_dim))).sum(-1) for x in x_samples])
     # poly_vector = torch.cat([sum([embedding[i] * (x ** i) for i in range(len(embedding))]).unsqueeze(0) for x in x_samples])
 
-    embedding = embedding  # Ensure embedding is on the right device
-    x_samples = x_samples  # Ensure x_samples is on the right device
+    embedding = embedding
+    x_samples = x_samples
 
     # Extend dimensions for broadcasting
     emb_expanded = embedding.unsqueeze(0)  # Shape: [1, embedding_dim]
@@ -166,7 +164,7 @@ def compute_score(h_idx, r_idx, t_idx):
 def compute_vtp_score(h_idx, r_idx, t_idx):
     x_samples = torch.linspace(-1, 1, 50)
 
-    # Fetch the embeddings for the head, relation, and tail entities
+    # Fetching the embeddings for the head, relation, and tail entities
     h = entity_embeddings(torch.tensor([h_idx]))[0]
     r = relation_embeddings(torch.tensor([r_idx]))[0]
     t = entity_embeddings(torch.tensor([t_idx]))[0]
@@ -182,7 +180,7 @@ def compute_vtp_score(h_idx, r_idx, t_idx):
     return score
 
 def compute_trilinear_score(h_idx, r_idx, t_idx):
-    x_samples = torch.linspace(-1, 1, 50)  # Ensure samples are on the right device
+    x_samples = torch.linspace(-1, 1, 50)
 
     h = entity_embeddings(torch.tensor([h_idx]))[0]
     r = relation_embeddings(torch.tensor([r_idx]))[0]
@@ -211,7 +209,7 @@ def compute_MRR(test_triples):
 
         # Score all entities as potential tails
         for t_idx in all_entity_indices:
-            # Using the score function you provided
+
             score = compute_trilinear_score(h_idx, r_idx, t_idx)
             scores.append((t_idx, score.item()))
 

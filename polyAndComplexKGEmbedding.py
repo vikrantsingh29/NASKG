@@ -2,6 +2,7 @@ import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 
 # # Assuming entities are represented by integers for simplicity
 # all_entities = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -175,7 +176,8 @@ def compute_vtp_score(h_idx, r_idx, t_idx):
     ft = complex_num(t, x_samples)
 
     # Compute the VTP score using the transformed embeddings
-    score = torch.sum(fh * (fr * ft))
+    # score = torch.sum(fh * (fr * ft))
+    score =  torch.trapz(fh * (fr * ft), x_samples, dim=0)
 
     return score
 
@@ -190,7 +192,8 @@ def compute_trilinear_score(h_idx, r_idx, t_idx):
     fr = complex_num(r, x_samples)
     ft = complex_num(t, x_samples)
 
-    score = torch.sum(fh * fr * ft)  # Element-wise multiplication across the three vectors
+    # score = torch.sum(fh * fr * ft)  # Element-wise multiplication across the three vectors
+    score = torch.trapz(fh * fr * ft, x_samples, dim=0)
 
     return score
 
@@ -199,6 +202,32 @@ def compute_loss(positive_score, negative_score):
     y = torch.ones_like(positive_score)  # The target tensor assuming positive_score should be larger than negative_score
     loss = criterion(positive_score, negative_score, y)
     return loss
+
+
+
+def calculate_loss_BCELogistLoss(pos_scores, neg_scores):
+    # Convert scores to probabilities
+    pos_probs = torch.sigmoid(pos_scores)
+    neg_probs = torch.sigmoid(neg_scores)
+
+    # True labels
+    pos_labels = torch.ones_like(pos_scores)
+    neg_labels = torch.zeros_like(neg_scores)
+
+    # BCELoss for positive and negative triples
+    pos_loss = F.binary_cross_entropy(pos_probs, pos_labels)
+    neg_loss = F.binary_cross_entropy(neg_probs, neg_labels)
+
+    # Combine the losses
+    total_loss = pos_loss + neg_loss
+
+    return total_loss
+
+def l2_loss(pos_scores, neg_scores):
+    margin = 1
+    return torch.sum(F.relu( neg_scores - pos_scores+ margin))
+
+
 
 
 def compute_MRR(test_triples):
